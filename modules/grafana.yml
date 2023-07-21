@@ -1,0 +1,34 @@
+- name: Config repositories 
+  apt:
+    name: [ "apt-transport-https", "software-properties-common" ]
+    state: present
+  wget:
+    url: https://apt.grafana.com/gpg.key
+    dest: usr/share/keyrings/grafana.key 
+- name: Add grafana repository
+  apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com  stable main
+    state: present
+  tee:
+    dest: /etc/apt/sources.list.d/grafana.list
+    content: deb [signed-by=/usr/share/keyrings/grafana.key] https://apt.grafana.com stable main
+
+- name: Update the list of available packages
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+- name: Command to operate the grafana service
+    ansible.builtin.service:
+      name: grafana-server
+      state: started
+      enabled: yes
+- name: Initialize grafana service 
+    ansible.builtin.systemd_service:
+      name: grafana-server
+      daemon_reload: yes
+- name: Restart grafana service
+    ansible.builtin.service:
+      name: grafana-server
+      state: restarted
+      enabled: yes
+

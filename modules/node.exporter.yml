@@ -1,0 +1,56 @@
+- name: Install node exporter
+    file:
+      path: /downloads
+      state: directory
+    ansible_builtin_shell: curl -LO https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
+    ansible_builtin_stat:
+      path: /downloads/node_exporter-1.6.1.linux-amd64.tar.gz
+    ansible_builtin_unarchive:
+      src: node_exporter-1.6.1.linux-amd64.tar.gz
+      dest: /
+      remote_src: yes
+      creates: node_exporter-1.6.1.linux-amd64
+- name: Copy node exporter binary to /usr/local/bin
+    ansible.builtin.copy:
+      src: /downloads/node_exporter-1.6.1.linux-amd64/node_exporter
+      type: directory
+      dest: /usr/local/bin/
+      mode: '0755'
+- name: Create node exporter user
+    ansible.builtin.user:
+      name: node_exporter
+      shell: /bin/false
+      system: yes
+      state: present
+- name: Create node exporter group
+    ansible.builtin.group:
+      name: node_exporter
+      system: yes
+      state: present
+- name: Create node exporter server file
+    ansible.builtin.file:
+      path: /etc/systemd/system/node_exporter.service
+      state: touch
+      owner: node_exporter
+      group: node_exporter
+      mode: 0644
+    template:
+      src: node_exporter.service.j2
+      dest: /etc/systemd/system/node_exporter.service
+      owner: root
+      group: root
+      mode: 0644
+- name: Reload systemd
+    ansible.builtin.systemd_service:
+      name: node_exporter
+      daemon_reload: yes
+- name: Start and active node exporter service
+    ansible.builtin.systemd.service:
+      name: node_exporter
+      state: started
+      enabled: yes
+    ansible.builtin.systemd.service:
+      name: node_exporter
+      state: enabled
+
+

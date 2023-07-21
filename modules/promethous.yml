@@ -1,0 +1,90 @@
+- name: Create prometheus user
+  user:
+    name: prometheus
+    shell: /bin/false
+    system: yes
+    state: present
+- name: Create prometheus group
+  group:
+    name: prometheus
+    system: yes
+    state: present
+- name: Create prometheus data directory
+  file:
+    path: /var/lib/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+- name: Download Prometheus and extract it
+    ansible_builtin_file:
+      path: /downloads
+      state: directory
+      owner: prometheus
+      group: prometheus
+      mode: '0755'
+    ansible.builtin.shell: curl -LO https://github.com/prometheus/prometheus/releases/download/v2.45.0/prometheus-2.45.0.linux-amd64.tar.gz
+    ansible.builtin.stat:
+      path: /downloads/prometheus-2.45.0.linux-amd64.tar.gz
+    ansible.builtin.unarchive:
+      src: /downloads/prometheus-2.45.0.linux-amd64.tar.gz
+      dest: /downloads
+      remote_src: yes
+      creates: /downloads/prometheus-2.45.0.linux-amd64
+- name: Copy prometheus binary to /usr/local/bin
+    ansible.builtin.copy:
+      src: /downloads/prometheus-2.45.0.linux-amd64/prometheus
+      type: directory
+      dest: /usr/local/bin/
+      owner: prometheus
+      group: prometheus
+      mode: '0755'
+    ansible.builtin.copy:
+      src: /downloads/prometheus-2.45.0.linux-amd64/promtool
+      type: directory
+      dest: /usr/local/bin/
+      owner: prometheus
+      group: prometheus
+      mode: '0755'
+    ansible.builtin.copy:
+      src: /downloads/prometheus-2.45.0.linux-amd64/consoles
+      type: directory
+      dest: /etc/prometheus
+      owner: prometheus
+      group: prometheus
+      mode: '0755'
+    ansible.builtin.copy:
+      src: /downloads/prometheus-2.45.0.linux-amd64/console_libraries
+      type: directory
+      dest: /etc/prometheus
+      owner: prometheus
+      group: prometheus
+      mode: '0755'
+    ansible.builtin.copy:
+      src: /downloads/prometheus-2.45.0.linux-amd64/prometheus.yml
+      type: directory
+      dest: /etc/prometheus
+      owner: prometheus
+      group: prometheus
+      mode: '0755'
+- name: Create prometheus service file
+  template:
+    src: /config/prometheus.yml.j2
+    dest: /etc/systemd/system/prometheus.service
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    name: prometheus
+    daemon_reload: yes
+- name: Start prometheus service
+  service:
+    name: prometheus
+    state: started
+    enabled: yes
+- name: Define prometheus as a service
+  systemd:
+    name: prometheus
+    state: enabled
+

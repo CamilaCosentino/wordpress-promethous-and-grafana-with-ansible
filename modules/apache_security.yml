@@ -1,0 +1,7 @@
+- name: Disable Apache default site
+  file:
+    path: /etc/apache2/sites-enabled/000-default.conf
+    state: absent
+  notify:
+    - restart apache2
+
