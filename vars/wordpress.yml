@@ -1,0 +1,11 @@
+#MySQL Settings
+mysql_admin_user: "cami_34214sd"
+mysql_admin_password: "educacionit2023"
+mysql_wp_db: "_R4r4wordpress"
+mysql_wp_user: "4222wordpress"
+mysql_wp_password: "educacionit2023."
+
+#Apache Settings
+http_port: 80
+server_name: "wordpress.educacionit.local"
+server_admin: "webmaster@wordpress.educacionit.local"
